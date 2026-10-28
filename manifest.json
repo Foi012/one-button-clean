@@ -4,7 +4,7 @@
   "js": "index.js",
   "css": "style.css",
   "author": "One Button contributors",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "homePage": "https://github.com/Foi012/one-button-clean",
   "auto_update": false,
   "hooks": {

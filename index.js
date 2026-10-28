@@ -89,6 +89,11 @@ function start() {
     function externalPanels() {
         return [...document.querySelectorAll('dialog[open], [role="dialog"], #pyq-creator-panel.pyq-open')].filter(node => !root.contains(node) && node.getClientRects().length && getComputedStyle(node).visibility !== 'hidden').map(node => node.id || node.className).join('|');
     }
+    function releaseCollected() {
+        // Hide before restoring the original position and transition rules.
+        collector.setExposed([]); collector.sync(settings);
+        dock.releaseAll(); collector.sync(settings);
+    }
     function setOpen(open, origin) {
         if (dock.active.size && !open) { pendingClose = true; return; }
         if (open) {
@@ -98,7 +103,7 @@ function start() {
             try { panel.showPopover(); } catch { panel.hidden = true; fallback.textContent = '当前浏览器无法打开收纳面板，请更新浏览器。'; return; }
             theme.update(); externalAtOpen = externalPanels(); refresh(); close.focus();
         } else {
-            dock.releaseAll(); collector.setExposed([]); collector.sync(settings);
+            releaseCollected();
             try { if (panel.matches(':popover-open')) panel.hidePopover(); } catch { /* page teardown */ }
             panel.hidden = true;
             if (panel.contains(document.activeElement)) {
@@ -110,7 +115,7 @@ function start() {
     }
     function refresh() {
         if (dock.active.size) return;
-        dock.releaseAll(); collector.setExposed([]); collector.sync(settings);
+        releaseCollected();
         const found = discoverEntrances(), detected = new Map(found.map(item => [item.selector, item]));
         const existing = new Map(catalog.filter(item => detected.has(item.selector) || selected(item.selector)).map(item => [item.selector, detected.get(item.selector) || item]));
         for (const item of found) existing.set(item.selector, item);
@@ -139,7 +144,7 @@ function start() {
         save(); syncControls();
     }
     function render() {
-        dock.releaseAll(); collector.setExposed([]); collector.sync(settings);
+        releaseCollected();
         targetObserver.disconnect(); rows.clear(); list.replaceChildren();
         if (!catalog.length) list.append(el('p', 'ob-muted ob-empty', '未检测到可收纳的悬浮入口。'));
         for (const item of catalog) {

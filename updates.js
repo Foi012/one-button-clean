@@ -1,5 +1,5 @@
-export const VERSION = '3.0.5';
-export const RELEASE_NOTES = '单层列表、三态总开关、面板入口方式；修复美化勾选图案叠加和小剧场图标打开时的缩放闪动。';
+export const VERSION = '3.0.6';
+export const RELEASE_NOTES = '修复点击背景关闭收纳面板时，原插件的过渡动画导致悬浮球短暂闪现。';
 
 export function extensionFolder(url = import.meta.url) {
     const parts = new URL('.', url).pathname.split('/').filter(Boolean);

@@ -1,5 +1,5 @@
 #ob-root, #ob-settings { color: var(--ob-text, var(--SmartThemeBodyColor, inherit)); font-family: inherit; font-size: inherit; }
-.ob-collected, .ob-collected * { visibility: hidden !important; pointer-events: none !important; }
+.ob-collected, .ob-collected * { visibility: hidden !important; pointer-events: none !important; transition: none !important; }
 #ob-root [hidden], #ob-settings [hidden], #ob-menu-entry[hidden] { display: none !important; }
 #ob-root *, #ob-settings * { box-sizing: border-box; }
 #ob-root button, #ob-settings button { font: inherit; cursor: pointer; }

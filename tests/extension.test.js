@@ -424,3 +424,36 @@ test('composited light and shadow entrances leave no pixels at their original po
     await page.getByRole('button',{name:'关闭收纳面板'}).click();
     assert.equal((await page.screenshot({clip})).equals(empty),true,'closed collection must leave no old entrance pixels');
 }));
+
+test('background dismissal hides collected entrances from the first frame despite original visibility transitions', () => scenario(async page => {
+    await mountReference(page,'echo'); await mountReference(page,'sashimi');
+    await page.locator('#titania-float-btn,#preset-easy-toggle-native').evaluateAll(nodes => {
+        for(const node of nodes) node.style.transition='all 1s ease';
+    });
+    const originalTransition=await page.locator('#titania-float-btn').evaluate(node => { const style=getComputedStyle(node); return [style.transitionProperty,style.transitionDuration,style.transitionTimingFunction]; });
+    await toggle(page,'回声工具箱'); await toggle(page,'生鱼片工具箱');
+    await page.evaluate(() => {
+        window.dismissFrames=[];
+        document.addEventListener('pointerdown', () => {
+            const sample=() => {
+                dismissFrames.push(['#titania-float-btn','#preset-easy-toggle-native'].map(selector => {
+                    const node=document.querySelector(selector);
+                    return {selector,visibility:getComputedStyle(node).visibility};
+                }));
+                if(dismissFrames.length<12) requestAnimationFrame(sample);
+            };
+            sample();
+        },{once:true});
+    });
+    await page.mouse.click(1050,40);
+    await page.waitForFunction(() => dismissFrames.length===12);
+    assert.equal(await page.locator('#ob-panel').isVisible(),false);
+    const frames=await page.evaluate(() => dismissFrames);
+    assert.ok(frames.flat().every(sample=>sample.visibility==='hidden'),'no visible transition frame after clicking the background: '+JSON.stringify(frames));
+    assert.equal(await page.evaluate(() => referenceOpens),0);
+    await open(page);
+    assert.equal(await page.locator('#titania-float-btn').isVisible(),true);
+    await toggle(page,'回声工具箱',false);
+    const restoredTransition=await page.locator('#titania-float-btn').evaluate(node => { const style=getComputedStyle(node); return [style.transitionProperty,style.transitionDuration,style.transitionTimingFunction]; });
+    assert.deepEqual(restoredTransition,originalTransition);
+}));
