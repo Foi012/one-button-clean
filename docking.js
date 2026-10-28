@@ -40,6 +40,10 @@ export class DockManager {
             // Establish the final scale and position before entering the top layer.
             // Original transform transitions must not animate the docking change.
             this.position(record);
+            // Tear down the old renderer before promotion. WKWebView can otherwise
+            // leave a composited copy at the original position (including shadow UI).
+            this.write(record, 'display', 'none');
+            void node.offsetWidth;
             try { node.showPopover(); } catch { this.release(node); return false; }
             // Some WKWebViews retain the old fixed-position renderer on re-entry.
             // Rebuild its positioning context after promotion, before the next paint.
@@ -81,6 +85,9 @@ export class DockManager {
         if (!record) return;
         this.captureExternal(record);
         this.records.delete(node);
+        // Remove its top-layer renderer before returning to the original context.
+        this.write(record, 'display', 'none');
+        void node.offsetWidth;
         try { if (node.matches(':popover-open')) node.hidePopover(); } catch { /* detached/rebuilt original */ }
         node.removeAttribute('popover');
         node.classList.remove('ob-native-docked');

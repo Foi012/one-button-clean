@@ -398,3 +398,29 @@ test('known entrances stay inside their slots after repeated off/on and close/op
         }
     }
 }));
+
+test('composited light and shadow entrances leave no pixels at their original positions after recollection', () => scenario(async page => {
+    await page.locator('#extensionsMenuButton').evaluate(node => { node.style.left='auto'; node.style.right='18px'; });
+    const clip={x:100,y:100,width:100,height:170};
+    const empty=await page.screenshot({clip});
+    await mountReference(page,'echo'); await mountReference(page,'sashimi');
+    await page.locator('#titania-float-btn').evaluate(node => {
+        node.style.background='#475569'; node.style.backdropFilter='blur(8px)'; node.style.willChange='transform';
+    });
+    await page.locator('#preset-easy-toggle-native').evaluate(node => {
+        node.style.willChange='transform';
+        const style=document.createElement('style');
+        style.textContent='.pet-trigger{backdrop-filter:blur(8px);transform:translateZ(0)}';
+        node.shadowRoot.append(style);
+    });
+    await toggle(page,'回声工具箱'); await toggle(page,'生鱼片工具箱');
+    for(const name of ['回声工具箱','生鱼片工具箱']) {
+        for(let i=0;i<3;i++) {
+            await toggle(page,name,false); await toggle(page,name,true);
+            const actual=await page.screenshot({clip});
+            assert.equal(actual.equals(empty),true,`${name}: original position must be visually empty`);
+        }
+    }
+    await page.getByRole('button',{name:'关闭收纳面板'}).click();
+    assert.equal((await page.screenshot({clip})).equals(empty),true,'closed collection must leave no old entrance pixels');
+}));
