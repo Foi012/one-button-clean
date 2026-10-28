@@ -41,6 +41,10 @@ export class DockManager {
             // Original transform transitions must not animate the docking change.
             this.position(record);
             try { node.showPopover(); } catch { this.release(node); return false; }
+            // Some WKWebViews retain the old fixed-position renderer on re-entry.
+            // Rebuild its positioning context after promotion, before the next paint.
+            this.write(record, 'position', 'absolute');
+            void node.offsetWidth;
         }
         record.slot = slot;
         this.position(record);

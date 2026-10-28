@@ -1,4 +1,4 @@
-export const VERSION = '3.0.3';
+export const VERSION = '3.0.4';
 export const RELEASE_NOTES = '单层列表、三态总开关、面板入口方式；修复美化勾选图案叠加和小剧场图标打开时的缩放闪动。';
 
 export function extensionFolder(url = import.meta.url) {

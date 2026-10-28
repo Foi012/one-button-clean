@@ -2,7 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { chromium } from '@playwright/test';
+import { chromium, webkit } from '@playwright/test';
 import { normalizeSettings } from '../core.js';
 import { contrast } from '../theme.js';
 import { loadSettings } from '../settings.js';
@@ -41,7 +41,9 @@ before(async () => {
     });
     await new Promise(resolve => foreignServer.listen(0, '127.0.0.1', resolve));
     foreignOrigin = `http://127.0.0.1:${foreignServer.address().port}`;
-    browser = await chromium.launch({ ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : { channel: 'chrome' }), headless: true });
+    browser = process.env.TEST_BROWSER === 'webkit'
+        ? await webkit.launch({ headless: true })
+        : await chromium.launch({ ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : { channel: 'chrome' }), headless: true });
 });
 after(async () => { await browser?.close(); await new Promise(resolve => server?.close(resolve)); await new Promise(resolve => foreignServer?.close(resolve)); });
 async function scenario(fn, options = {}) {
@@ -377,3 +379,22 @@ test('saved companion selections are removed while real entrance choices are pre
     ];
     assert.deepEqual(normalizeSettings({ entries }).entries, entries.slice(2));
 });
+
+test('known entrances stay inside their slots after repeated off/on and close/open cycles', () => scenario(async page => {
+    for (const kind of ['pyq', 'quick-presets', 'echo', 'sashimi']) await mountReference(page, kind);
+    const entries = [['小剧场生成器','#pyq-creator-float-ball'],['楼内预设快切','#pss-root .pss-fab'],['回声工具箱','#titania-float-btn'],['生鱼片工具箱','#preset-easy-toggle-native']];
+    await open(page);
+    for (const [name,selector] of entries) {
+        await toggle(page,name);
+        for(let i=0;i<3;i++) {
+            await toggle(page,name,false); await toggle(page,name,true);
+            const node=await page.locator(selector).boundingBox();
+            const slot=await page.locator('.ob-row').filter({has:page.getByRole('switch',{name:`收纳 ${name}`,exact:true})}).locator('.ob-control-slot').boundingBox();
+            assert.ok(Math.abs(node.x+node.width/2-slot.x-slot.width/2)<2, `${name}: horizontal alignment`);
+            assert.ok(Math.abs(node.y+node.height/2-slot.y-slot.height/2)<2, `${name}: vertical alignment`);
+            await page.getByRole('button',{name:'关闭收纳面板'}).click();
+            assert.equal(await page.locator(selector).isVisible(),false);
+            await open(page);
+        }
+    }
+}));
