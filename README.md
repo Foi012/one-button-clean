@@ -28,7 +28,7 @@ One Button 让你自己决定哪些入口留在外面，哪些收进同一个面
 2. 填入仓库地址：
 
    ```text
-   https://github.com/Foi012/one-button
+   https://github.com/Foi012/one-button-clean
    ```
 
 3. 安装完成后刷新酒馆页面。
