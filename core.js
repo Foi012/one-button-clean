@@ -1,4 +1,4 @@
-import { ADAPTERS, adapterFor, adapterSelector, isExpanded } from './adapters.js';
+import { ADAPTERS, adapterFor, adapterSelector, isExpanded, isCompanion, isCompanionSelector } from './adapters.js';
 
 export const KEY = 'one_button';
 export const HIDDEN = 'ob-collected';
@@ -10,7 +10,7 @@ export function normalizeSettings(value) {
         if (!entry || typeof entry.selector !== 'string' || !entry.selector.trim()) return [];
         const original = entry.selector.trim();
         const selector = /^#pyq-creator-float-ball(?:$|[ >.:\[])/.test(original) || original === '.pyq-float-ball-hitbox' ? '#pyq-creator-float-ball' : original;
-        if (seen.has(selector)) return [];
+        if (seen.has(selector) || isCompanionSelector(selector)) return [];
         seen.add(selector);
         return [{ selector, name: String(entry.name || selector).slice(0, 100) }];
     }) : [];
@@ -29,6 +29,7 @@ export function resolveTarget(selector, doc = document, allowExpanded = false) {
         if (matches.length !== 1) return { error: matches.length ? '选择器匹配了多个元素，请缩小范围。' : '暂未找到入口，插件可能还没加载。' };
         const target = matches[0];
         if (!(target instanceof doc.defaultView.HTMLElement)) return { error: '请选择 HTML 按钮或悬浮入口。' };
+        if (isCompanion(target)) return { error: '这是入口附带的状态信息，不能单独收纳。' };
         if (target.matches(PROTECTED) || target.closest(PROTECTED) || target.querySelector(PROTECTED) || ['HTML', 'BODY', 'SCRIPT', 'STYLE', 'LINK'].includes(target.tagName)) {
             return { error: '这是主界面、弹窗或收纳插件本身，不能收纳。' };
         }
@@ -66,7 +67,7 @@ export function selectorFor(element, doc = document) {
 export function pickTarget(element) {
     if (!(element instanceof Element) || element.closest(PROTECTED)) return null;
     if (!(element instanceof HTMLElement)) element = element.closest('button, a, [role="button"]') || element.parentElement;
-    if (!element) return null;
+    if (!element || isCompanion(element)) return null;
     for (const adapter of ADAPTERS) {
         const host = element.closest(adapter.selector);
         if (host && resolveTarget(adapter.selector).target && !isExpanded(host)) return host;
@@ -123,8 +124,8 @@ export class Collector {
                 }
             }
             const rect = target.getBoundingClientRect();
-            if (isExpanded(target) || ((!adapter?.standalone) && (rect.width > 180 || rect.height > 180)) || this.exposed.has(target)) continue;
-            wanted.add(target);
+            if (isExpanded(target) || ((!adapter?.standalone) && (rect.width > 180 || rect.height > 180))) continue;
+            if (!this.exposed.has(target)) wanted.add(target);
             for (const css of adapter?.companions || []) {
                 const companion = this.doc.querySelector(css);
                 if (companion) wanted.add(companion);

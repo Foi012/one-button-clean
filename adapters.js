@@ -14,3 +14,11 @@ export function isExpanded(node) {
     // An unavailable/changed shadow tree must stay visible rather than hide unknown UI.
     return adapter?.shadowControl && !node.shadowRoot?.querySelector(adapter.shadowControl);
 }
+
+// Companion UI (for example an elapsed-time label) belongs to its entrance.
+const COMPANIONS = ADAPTERS.flatMap(adapter => adapter.companions || []);
+export function isCompanion(node) { return COMPANIONS.some(selector => node.closest(selector)); }
+export function isCompanionSelector(selector) {
+    return COMPANIONS.some(companion => selector === companion ||
+        (selector.startsWith(companion) && /^[ >.:\[]/.test(selector.slice(companion.length))));
+}

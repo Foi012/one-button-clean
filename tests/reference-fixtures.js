@@ -16,7 +16,8 @@ export async function mountReference(page, kind) {
             root.id = 'titania-float-btn';
             root.textContent = '剧场';
             const timer = document.createElement('div');
-            timer.id = 'titania-timer'; timer.textContent = '1.0';
+            timer.id = 'titania-timer'; timer.textContent = '0.0s';
+            timer.style.cssText = 'position:fixed;left:120px;top:155px;width:44px;height:20px';
             document.body.append(timer);
             let pressed = false;
             root.addEventListener('mousedown', () => { pressed = true; });

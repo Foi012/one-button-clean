@@ -1,4 +1,4 @@
-# 3.0.2 兼容性记录
+# 3.0.3 兼容性记录
 
 ## 交互与发现
 
@@ -20,7 +20,7 @@ Popover 的 UA 默认边框、背景和内边距通过零优先级样式回退�
 
 ## 已核对来源
 
-- 回声工具箱 5.9.1：`#titania-float-btn`，关联 `#titania-timer`。
+- 回声工具箱 5.9.1：`#titania-float-btn`，关联 `#titania-timer`。计时器及其子元素不作为独立入口；旧误收纳记录自动移除。主入口收纳期间，计时器随之隐藏，包括收纳面板打开时。
 - [生鱼片工具箱 1.6.6](https://github.com/Foi012/preset_control/tree/8719ad783f79fabd973640e3a6600e9e4a20b3e9)：开放 Shadow DOM 宿主 `#preset-easy-toggle-native`，原按钮 `.pet-trigger` 使用指针捕获。
 - 楼内预设快切离线 1.0.0：主页面 `#pss-root .pss-fab`，同级 `#pss-panel`。
 - 小剧场 4.032 beta：`#pyq-creator-float-ball` 包含独立图片层与点击热区，保留整球。旧热区选择器自动归一为整球。

@@ -353,3 +353,27 @@ test('original transform animation does not shrink on opening and never accumula
     await toggle(page, '小剧场生成器', false);
     assert.equal(await page.locator('#pyq-creator-float-ball').evaluate(n=>n.style.cssText), original.style);
 }));
+
+test('companion timer is not an entrance and follows collection even while its owner is docked', () => scenario(async page => {
+    await mountReference(page, 'echo');
+    await open(page);
+    assert.equal(await page.getByRole('switch').count(), 5); // Four fixture controls plus Echo.
+    assert.equal(await page.getByRole('switch', { name: '收纳 0.0s', exact: true }).count(), 0);
+    await toggle(page, '回声工具箱');
+    assert.equal(await page.locator('#titania-timer').isVisible(), false);
+    assert.equal(await page.locator('#titania-float-btn').isVisible(), true);
+    await page.getByRole('button', { name: '关闭收纳面板' }).click();
+    assert.equal(await page.locator('#titania-timer').isVisible(), false);
+    await toggle(page, '回声工具箱', false);
+    assert.equal(await page.locator('#titania-timer').isVisible(), true);
+    assert.equal(await page.locator('#titania-timer').getAttribute('aria-hidden'), null);
+}));
+test('saved companion selections are removed while real entrance choices are preserved', () => {
+    const entries = [
+        { selector: '#titania-timer', name: '0.0s' },
+        { selector: '#titania-timer > span:nth-of-type(1)', name: '计时' },
+        { selector: '#titania-float-btn', name: '回声工具箱' },
+        { selector: '#other-timer', name: '0.0s' },
+    ];
+    assert.deepEqual(normalizeSettings({ entries }).entries, entries.slice(2));
+});
