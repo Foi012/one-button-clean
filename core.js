@@ -23,6 +23,43 @@ export function normalizeSettings(value) {
     };
 }
 
+// A transparent, non-interactive mount can cover the viewport around real balls.
+// A positioned panel with its own interactive surface is not an entrance boundary.
+export function isPanelContent(node) {
+    const view = node.ownerDocument.defaultView;
+    for (let parent = node.parentElement; parent && parent !== node.ownerDocument.body; parent = parent.parentElement) {
+        const style = view.getComputedStyle(parent), rect = parent.getBoundingClientRect();
+        if (!['fixed', 'absolute'].includes(style.position) || (rect.width <= 180 && rect.height <= 180)) continue;
+        const mount = style.pointerEvents === 'none' && ['transparent', 'rgba(0, 0, 0, 0)'].includes(style.backgroundColor) && style.backgroundImage === 'none' && style.boxShadow === 'none' && (!style.backdropFilter || style.backdropFilter === 'none');
+        if (!mount) return true;
+    }
+    return false;
+}
+
+export function isRendered(node, allowCollected = false) {
+    const view = node.ownerDocument.defaultView;
+    if (!node.getClientRects().length || node.closest('[inert]')) return false;
+    for (let parent = node; parent; parent = parent.parentElement) {
+        const style = view.getComputedStyle(parent);
+        if (style.display === 'none' || style.contentVisibility === 'hidden' || Number(style.opacity) === 0) return false;
+        if (style.visibility !== 'visible' && !(allowCollected && parent.closest(`.${HIDDEN}`))) return false;
+    }
+    return true;
+}
+
+export function reconcileEntries(entries, doc = document) {
+    const seen = new Set();
+    return entries.flatMap(entry => {
+        const { target, reason } = resolveTarget(entry.selector, doc, true);
+        if (reason === 'panel-content') return [];
+        const adapter = target && adapterFor(target);
+        const item = adapter ? { selector: adapter.selector, name: adapter.name } : entry;
+        if (seen.has(item.selector)) return [];
+        seen.add(item.selector);
+        return [item];
+    });
+}
+
 export function resolveTarget(selector, doc = document, allowExpanded = false) {
     try {
         const matches = doc.querySelectorAll(selector);
@@ -33,6 +70,7 @@ export function resolveTarget(selector, doc = document, allowExpanded = false) {
         if (target.matches(PROTECTED) || target.closest(PROTECTED) || target.querySelector(PROTECTED) || ['HTML', 'BODY', 'SCRIPT', 'STYLE', 'LINK'].includes(target.tagName)) {
             return { error: '这是主界面、弹窗或收纳插件本身，不能收纳。' };
         }
+        if (isPanelContent(target)) return { error: '这是插件面板内的控件，不是独立悬浮入口。', reason: 'panel-content' };
         const rect = target.getBoundingClientRect();
         const adapter = adapterFor(target);
         if ((rect.width > 180 || rect.height > 180) && !allowExpanded && adapter?.id !== 'sashimi' && !adapter?.standalone) return { error: '选中区域太大，请选择悬浮入口本身。' };
@@ -67,7 +105,7 @@ export function selectorFor(element, doc = document) {
 export function pickTarget(element) {
     if (!(element instanceof Element) || element.closest(PROTECTED)) return null;
     if (!(element instanceof HTMLElement)) element = element.closest('button, a, [role="button"]') || element.parentElement;
-    if (!element || isCompanion(element)) return null;
+    if (!element || isCompanion(element) || isPanelContent(element)) return null;
     for (const adapter of ADAPTERS) {
         const host = element.closest(adapter.selector);
         if (host && resolveTarget(adapter.selector).target && !isExpanded(host)) return host;

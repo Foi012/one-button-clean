@@ -1,5 +1,5 @@
-export const VERSION = '3.0.6';
-export const RELEASE_NOTES = '修复点击背景关闭收纳面板时，原插件的过渡动画导致悬浮球短暂闪现。';
+export const VERSION = '3.0.7';
+export const RELEASE_NOTES = '改进入口识别：排除透明面板和面板内部按钮；识别图灵预设手账的整球并清理旧误收纳记录。';
 
 export function extensionFolder(url = import.meta.url) {
     const parts = new URL('.', url).pathname.split('/').filter(Boolean);

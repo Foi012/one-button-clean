@@ -1,5 +1,5 @@
-import { Collector, resolveTarget } from './core.js';
-import { isExpanded } from './adapters.js';
+import { Collector, resolveTarget, reconcileEntries, isRendered } from './core.js';
+import { ADAPTERS, adapterSelector, isExpanded } from './adapters.js';
 import { discoverEntrances } from './discovery.js';
 import { DockManager } from './docking.js';
 import { deviceId, loadSettings } from './settings.js';
@@ -87,7 +87,7 @@ function start() {
         fallback.textContent = !host && settings.entryMode === 'menu' ? '未找到酒馆扩展菜单，已显示悬浮按钮。' : id === 'storage-unavailable' ? '浏览器无法记忆设备标识。' : '';
     }
     function externalPanels() {
-        return [...document.querySelectorAll('dialog[open], [role="dialog"], #pyq-creator-panel.pyq-open')].filter(node => !root.contains(node) && node.getClientRects().length && getComputedStyle(node).visibility !== 'hidden').map(node => node.id || node.className).join('|');
+        return [...document.querySelectorAll(['dialog[open]', '[role="dialog"]', '#pyq-creator-panel.pyq-open', ...ADAPTERS.flatMap(adapter => adapter.panels || [])].join(','))].filter(node => !root.contains(node) && isRendered(node)).map(node => node.id || node.className).join('|');
     }
     function releaseCollected() {
         // Hide before restoring the original position and transition rules.
@@ -113,9 +113,23 @@ function start() {
         }
         ensureMenu();
     }
+    function reconcileSavedEntries() {
+        const entries = reconcileEntries(settings.entries);
+        if (JSON.stringify(entries) !== JSON.stringify(settings.entries)) { settings.entries = entries; save(); }
+        catalog = catalog.filter(item => {
+            const { target, reason } = resolveTarget(item.selector, document, true);
+            const canonical = target && adapterSelector(target);
+            return reason !== 'panel-content' && (!canonical || canonical === item.selector);
+        });
+        const retained = new Set(catalog.map(item => item.selector));
+        for (const [selector, row] of rows) if (!retained.has(selector)) {
+            row.toggle.closest('.ob-row')?.remove(); rows.delete(selector);
+        }
+    }
     function refresh() {
         if (dock.active.size) return;
         releaseCollected();
+        reconcileSavedEntries();
         const found = discoverEntrances(), detected = new Map(found.map(item => [item.selector, item]));
         const existing = new Map(catalog.filter(item => detected.has(item.selector) || selected(item.selector)).map(item => [item.selector, detected.get(item.selector) || item]));
         for (const item of found) existing.set(item.selector, item);
@@ -169,6 +183,7 @@ function start() {
     }
     function syncControls() {
         if (disposed || dock.active.size) return;
+        reconcileSavedEntries();
         const wanted = new Map(), exposed = new Set();
         let changed = false;
         for (const entry of [...settings.entries]) {

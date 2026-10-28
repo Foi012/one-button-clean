@@ -58,3 +58,18 @@ export async function mountReference(page, kind) {
         }
     }, kind);
 }
+
+export async function mountNotebook(page) {
+    await page.evaluate(() => {
+        const mount = document.createElement('div'); mount.id = 'universal-preset-floating-panel';
+        mount.style.cssText = 'position:fixed;inset:0;pointer-events:none';
+        mount.innerHTML = '<div class="uni-orb" title="点击展开手账的长提示" style="position:absolute;left:120px;top:100px;width:68px;height:68px;pointer-events:auto"><button title="贴边">球</button></div><div class="uni-panel" style="position:absolute;left:230px;top:80px;width:400px;height:300px;background:#333;opacity:0;pointer-events:none"><button style="position:absolute;right:10px;top:10px">面板按钮</button></div>';
+        document.body.append(mount);
+        const output = document.createElement('div'); output.id = 'tat-root';
+        output.style.cssText = 'position:fixed;width:0;height:0;pointer-events:none';
+        output.innerHTML = '<div class="tat-panel" style="position:fixed;left:240px;top:100px;width:400px;height:300px;background:linear-gradient(#333,#444);opacity:0;pointer-events:none"><div style="position:relative;width:400px;height:260px"><button id="tat-scroll-jump" style="position:absolute;right:15px;bottom:15px">最新输出</button></div></div>';
+        document.body.append(output);
+        const independent = document.createElement('button'); independent.id = 'independent-output'; independent.title = '独立最新输出';
+        independent.style.cssText = 'position:fixed;left:190px;top:140px;width:44px;height:44px'; independent.textContent = '输出'; document.body.append(independent);
+    });
+}

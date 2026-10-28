@@ -1,5 +1,5 @@
 import { ADAPTERS, adapterFor, isExpanded } from './adapters.js';
-import { HIDDEN, pickTarget, resolveTarget, selectorFor } from './core.js';
+import { isRendered, pickTarget, resolveTarget, selectorFor } from './core.js';
 
 export function discoverEntrances(doc = document) {
     const found = new Map();
@@ -15,7 +15,7 @@ export function discoverEntrances(doc = document) {
         if (!known?.standalone && (rect.width > 180 || rect.height > 180)) continue;
         const style = getComputedStyle(node);
         if (!known && !['fixed', 'absolute'].includes(style.position)) continue;
-        if (style.display === 'none' || (style.visibility === 'hidden' && !node.closest(`.${HIDDEN}`))) continue;
+        if (!isRendered(node, true)) continue;
         const target = pickTarget(node);
         if (!target || isExpanded(target)) continue;
         const selector = selectorFor(target, doc);

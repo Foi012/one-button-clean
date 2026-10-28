@@ -6,7 +6,7 @@ import { chromium, webkit } from '@playwright/test';
 import { normalizeSettings } from '../core.js';
 import { contrast } from '../theme.js';
 import { loadSettings } from '../settings.js';
-import { mountReference } from './reference-fixtures.js';
+import { mountReference, mountNotebook } from './reference-fixtures.js';
 
 const ENTRY = '/scripts/extensions/third-party/one-button/index.js';
 let server, foreignServer, browser, origin, foreignOrigin;
@@ -456,4 +456,41 @@ test('background dismissal hides collected entrances from the first frame despit
     await toggle(page,'回声工具箱',false);
     const restoredTransition=await page.locator('#titania-float-btn').evaluate(node => { const style=getComputedStyle(node); return [style.transitionProperty,style.transitionDuration,style.transitionTimingFunction]; });
     assert.deepEqual(restoredTransition,originalTransition);
+}));
+
+test('notebook has one named entrance; monitor buttons stay excluded when transparent or open', () => scenario(async page => {
+    await mountNotebook(page);
+    for(const visible of [false,true]) {
+        await page.locator('.tat-panel').evaluate((node,visible) => {node.style.opacity=visible?'1':'0';node.style.pointerEvents=visible?'auto':'none';},visible);
+        await open(page); await page.getByRole('button',{name:'刷新',exact:true}).click();
+        assert.equal(await page.getByRole('switch',{name:'收纳 图灵预设手账',exact:true}).count(),1);
+        assert.equal(await page.getByRole('switch',{name:'收纳 最新输出',exact:true}).count(),0);
+        assert.equal(await page.getByRole('switch',{name:'收纳 独立最新输出',exact:true}).count(),1);
+        await page.getByRole('button',{name:'关闭收纳面板'}).click();
+    }
+}));
+test('generic discovery rejects transparent ancestors and inner panel controls but retains transparent mounts', () => scenario(async page => {
+    await page.evaluate(() => {
+        document.body.insertAdjacentHTML('beforeend','<div style="position:fixed;left:250px;top:50px;width:400px;height:300px;opacity:0"><button id="transparent-inner" style="position:absolute;left:10px;top:10px">隐藏内部按钮</button></div><div style="position:fixed;inset:0;pointer-events:none"><button id="shell-entrance" title="独立挂载入口" style="position:absolute;left:180px;top:100px;width:44px;height:44px;pointer-events:auto">球</button><div style="position:absolute;left:250px;top:100px;width:300px;height:220px;background:#333;pointer-events:auto"><button id="panel-inner" style="position:absolute;left:10px;top:10px">面板内部按钮</button></div></div>');
+    });
+    await open(page);
+    assert.equal(await page.getByRole('switch',{name:'收纳 隐藏内部按钮',exact:true}).count(),0);
+    assert.equal(await page.getByRole('switch',{name:'收纳 面板内部按钮',exact:true}).count(),0);
+    assert.equal(await page.getByRole('switch',{name:'收纳 独立挂载入口',exact:true}).count(),1);
+}));
+test('old panel-button selections are removed and notebook selector aliases converge without losing collection', () => scenario(async page => {
+    await page.evaluate(() => {
+        const device=Object.keys(saved.one_button.devices)[0];
+        saved.one_button.devices[device].entries=[{selector:'#tat-scroll-jump',name:'最新输出'},{selector:'#universal-preset-floating-panel > div:nth-of-type(1)',name:'旧的长提示'}];
+        localStorage.setItem('settings',JSON.stringify(saved));
+    });
+    await page.reload(); await page.locator('#ob-root').waitFor({state:'attached'}); await mountNotebook(page);
+    await page.waitForFunction(() => {
+        const entries=Object.values(saved.one_button.devices)[0].entries;
+        return entries.length===1 && entries[0].selector==='#universal-preset-floating-panel .uni-orb';
+    });
+    await open(page);
+    assert.equal(await page.getByRole('switch',{name:'收纳 图灵预设手账',exact:true}).isChecked(),true);
+    assert.equal(await page.getByRole('switch',{name:'收纳 最新输出',exact:true}).count(),0);
+    assert.equal(await page.locator('#tat-scroll-jump').evaluate(node=>node.classList.contains('ob-collected')),false);
 }));

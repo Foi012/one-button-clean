@@ -3,6 +3,7 @@ export const ADAPTERS = Object.freeze([
     { id: 'echo', name: '回声工具箱', selector: '#titania-float-btn', companions: ['#titania-timer'] },
     { id: 'sashimi', name: '生鱼片工具箱', selector: '#preset-easy-toggle-native', shadowControl: '.pet-trigger' },
     { id: 'quick-presets', name: '楼内预设快切', selector: '#pss-root .pss-fab' },
+    { id: 'turing-notebook', name: '图灵预设手账', selector: '#universal-preset-floating-panel .uni-orb', panels: ['#universal-preset-floating-panel .uni-panel', '#tat-root .tat-panel'] },
     { id: 'pyq-theater', name: '小剧场生成器', selector: '#pyq-creator-float-ball', standalone: true },
 ]);
 
