@@ -1,0 +1,15 @@
+{
+  "display_name": "One Button · 入口收纳",
+  "loading_order": 100,
+  "js": "index.js",
+  "css": "style.css",
+  "author": "One Button contributors",
+  "version": "3.0.2",
+  "homePage": "https://github.com/Foi012/one-button",
+  "auto_update": false,
+  "hooks": {
+    "enable": "onEnable",
+    "disable": "onDisable",
+    "delete": "onDelete"
+  }
+}

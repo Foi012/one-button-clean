@@ -1,0 +1,56 @@
+#ob-root, #ob-settings { color: var(--ob-text, var(--SmartThemeBodyColor, inherit)); font-family: inherit; font-size: inherit; }
+.ob-collected, .ob-collected * { visibility: hidden !important; pointer-events: none !important; }
+#ob-root [hidden], #ob-settings [hidden], #ob-menu-entry[hidden] { display: none !important; }
+#ob-root *, #ob-settings * { box-sizing: border-box; }
+#ob-root button, #ob-settings button { font: inherit; cursor: pointer; }
+#ob-root button:disabled, #ob-settings button:disabled { opacity: .55; cursor: default; }
+#ob-root :is(button,input):focus-visible, #ob-settings :is(button,select):focus-visible { outline: 2px solid var(--ob-accent); outline-offset: 2px; }
+#ob-root .ob-panel { position: fixed; inset: auto; margin: 0; height: fit-content; padding: 14px; overflow: auto; color: var(--ob-text); background: var(--ob-bg); border: 1px solid var(--ob-line); border-radius: 8px; box-shadow: var(--ob-shadow); font-size: 14px; line-height: 1.5; font-family: inherit; text-align: left; overscroll-behavior: contain; }
+#ob-root .ob-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#ob-root .ob-head strong { font-size: 14px; font-weight: 600; }
+#ob-root .ob-icon-button { border: 0; background: transparent; color: inherit; font-size: 22px; padding: 0 5px; line-height: 1.3; }
+#ob-root .ob-button, #ob-settings .ob-button { border: 1px solid var(--ob-line); background: var(--ob-bg); color: var(--ob-text); padding: 6px 9px; border-radius: 5px; min-height: 32px; line-height: 1.4; }
+#ob-root .ob-button:hover:enabled, #ob-settings .ob-button:hover:enabled { background: var(--ob-hover); }
+#ob-root .ob-tools, #ob-settings .ob-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+#ob-root .ob-tools { justify-content: space-between; align-items: center; }
+#ob-root .ob-bulk { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; }
+#ob-root .ob-summary { margin: 4px 0 12px; font-size: 12px; }
+#ob-root .ob-list { margin-top: 10px; }
+#ob-root .ob-row { display: flex; align-items: center; gap: 10px; min-height: 64px; border-bottom: 1px solid var(--ob-line); padding: 4px 0; }
+#ob-root .ob-row:last-child { border-bottom: 0; }
+#ob-root .ob-control-slot { flex: 0 0 48px; width: 48px; height: 48px; }
+#ob-root .ob-caption { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+#ob-root .ob-caption small { display: block; font-size: 12px; }
+#ob-root .ob-caption small:empty { display: none; }
+#ob-root button.ob-switch { all: unset; box-sizing: border-box !important; display: inline-block !important; flex: 0 0 36px !important; width: 36px !important; height: 22px !important; min-width: 36px !important; min-height: 22px !important; max-width: 36px !important; max-height: 22px !important; padding: 0 !important; border: 1px solid var(--ob-line) !important; border-radius: 20px !important; background: var(--ob-hover) !important; position: relative !important; margin: 0 2px 0 0 !important; cursor: pointer; box-shadow: none !important; }
+#ob-root button.ob-switch::before, #ob-root button.ob-switch::after { content: none !important; display: none !important; box-shadow: none !important; }
+#ob-root .ob-switch .ob-thumb { display: block !important; position: absolute !important; left: 3px; top: 3px; width: 14px !important; height: 14px !important; border-radius: 50% !important; background: var(--ob-muted) !important; pointer-events: none !important; }
+#ob-root button.ob-switch[aria-checked="true"] { background: var(--ob-accent) !important; border-color: var(--ob-accent) !important; }
+#ob-root .ob-switch[aria-checked="true"] .ob-thumb { left: 17px; background: var(--ob-bg) !important; }
+#ob-root button.ob-switch[aria-checked="mixed"] { border-color: var(--ob-accent) !important; }
+#ob-root .ob-switch[aria-checked="mixed"] .ob-thumb { left: 10px; background: var(--ob-accent) !important; }
+#ob-root button.ob-switch:disabled { opacity: .5; cursor: default; }
+#ob-root button.ob-switch:focus-visible { outline: 2px solid var(--ob-accent) !important; outline-offset: 2px !important; }
+#ob-root .ob-muted, #ob-settings .ob-muted { color: var(--ob-muted); }
+#ob-root .ob-empty { margin: 12px 0; }
+#ob-root .ob-message { margin: 8px 0 0; line-height: 1.6; color: var(--ob-muted); font-size: 12px; overflow-wrap: anywhere; }
+#ob-root .ob-message:empty { display: none; }
+#ob-root .ob-entry-mode { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--ob-line); color: var(--ob-muted); font-size: 12px; }
+#ob-root .ob-entry-mode select { font: inherit; color: var(--ob-text); background: var(--ob-bg); border: 1px solid var(--ob-line); border-radius: 4px; padding: 4px 6px; }
+#ob-root .ob-launcher { position: fixed; z-index: 2147483000; width: 44px; height: 44px; padding: 0; border: 1px solid var(--ob-line); border-radius: 50%; background: var(--ob-bg); color: var(--ob-text); box-shadow: var(--ob-shadow); font-size: 23px; touch-action: none; user-select: none; }
+#ob-settings .ob-setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0; }
+#ob-settings .ob-setting select { width: auto; max-width: 65%; border: 1px solid var(--ob-line); border-radius: 5px; background: var(--ob-bg); color: var(--ob-text); padding: 6px; font: inherit; }
+#ob-settings .ob-updates { margin-top: 16px; border-top: 1px solid var(--ob-line); padding-top: 12px; }
+#ob-settings p, #ob-settings small { line-height: 1.6; }
+#ob-settings .ob-updates p { color: var(--ob-muted); font-size: 12px; }
+#ob-settings .ob-updates button { margin: 0 8px 8px 0; }
+#ob-menu-entry { font: inherit; text-align: left; width: 100%; color: inherit; background: transparent; border: 0; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { #ob-root * { transition: none !important; animation: none !important; } }
+/* Override popover UA defaults at zero specificity. Plugin-authored styles win. */
+:where(.ob-native-docked) {
+    border-top: var(--ob-native-border-top); border-right: var(--ob-native-border-right);
+    border-bottom: var(--ob-native-border-bottom); border-left: var(--ob-native-border-left);
+    padding-top: var(--ob-native-padding-top); padding-right: var(--ob-native-padding-right);
+    padding-bottom: var(--ob-native-padding-bottom); padding-left: var(--ob-native-padding-left);
+    background-color: var(--ob-native-background-color); color: var(--ob-native-color);
+}
